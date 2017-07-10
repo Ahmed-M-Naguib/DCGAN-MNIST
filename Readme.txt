@@ -1,0 +1,1 @@
+draft of a practice project based on the MNIST DCGAN model of https://github.com/yihui-he
