@@ -30,6 +30,25 @@ def mnist():
 def mnist_with_valid_set():
     trX, teX, trY, teY = mnist()
 
+    # traningSamplesPerClass = 500
+    # testingSamplesPerClass = 100
+    # numberOfClasses = 10
+    #
+    # indicesTrainClasses = []
+    # indicesTestClasses = []
+    # for i in np.arange(numberOfClasses):
+    #     indicesTrainClasses = np.append(indicesTrainClasses, i*6000 + np.arange(traningSamplesPerClass))
+    #     indicesTestClasses = np.append(indicesTestClasses, i * 1000 + np.arange(testingSamplesPerClass))
+    #
+    # indicesTrainClasses = indicesTrainClasses.astype(np.int64)
+    # indicesTestClasses = indicesTestClasses.astype(np.int64)
+    #
+    #
+    # trX = trX[indicesTrainClasses]
+    # trY = trY[indicesTrainClasses]
+    # teX = teX[indicesTestClasses]
+    # teY = teY[indicesTestClasses]
+
     train_inds = np.arange(len(trX))
     np.random.shuffle(train_inds)
     trX = trX[train_inds]

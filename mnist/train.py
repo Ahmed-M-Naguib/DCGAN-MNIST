@@ -1,4 +1,6 @@
 import os
+import cv2
+import scipy.misc
 import numpy as np
 from model import *
 from util import *
@@ -9,12 +11,12 @@ learning_rate = 0.0002
 batch_size = 128
 image_shape = [28,28,1]
 dim_z = 100
-dim_W1 = 1024
-dim_W2 = 128
-dim_W3 = 64
+dim_W1 = 16 #1024
+dim_W2 = 16 #128
+dim_W3 = 10 #64
 dim_channel = 1
 
-visualize_dim=196
+visualize_dim=100
 
 trX, vaX, teX, trY, vaY, teY = mnist_with_valid_set()
 
@@ -37,18 +39,25 @@ discrim_vars = [i for i in discrim_vars]
 gen_vars = [i for i in gen_vars]
 
 train_op_discrim = tf.train.AdamOptimizer(learning_rate, beta1=0.5).minimize(d_cost_tf, var_list=discrim_vars)
-train_op_gen = tf.train.AdamOptimizer(learning_rate, beta1=0.5).minimize(g_cost_tf, var_list=gen_vars)
+train_op_gen = tf.train.AdamOptimizer(learning_rate*5, beta1=0.5).minimize(g_cost_tf, var_list=gen_vars)
 
 Z_tf_sample, Y_tf_sample, image_tf_sample = dcgan_model.samples_generator(batch_size=visualize_dim)
 
 tf.global_variables_initializer().run()
 
 Z_np_sample = np.random.uniform(-1, 1, size=(visualize_dim,dim_z))
-Y_np_sample = OneHot( np.random.randint(10, size=[visualize_dim]))
-iterations = 0
-k = 2
+GT_sample = np.zeros(visualize_dim)
+gtw = int(visualize_dim/10)
+for i in np.arange(10):
+    GT_sample[i*gtw:(i+1)*gtw]+=i
 
-step = 200
+GT_sample = GT_sample.astype(np.int64)
+
+Y_np_sample = OneHot( GT_sample,10)
+iterations = 0
+k = 5
+
+step = 1
 
 for epoch in range(n_epochs):
     index = np.arange(len(trY))
@@ -65,7 +74,7 @@ for epoch in range(n_epochs):
         Ys = OneHot(trY[start:end])
         Zs = np.random.uniform(-1, 1, size=[batch_size, dim_z]).astype(np.float32)
 
-        if np.mod( iterations, k ) != 0:
+        if np.mod( iterations, k ) == 0:
             _, gen_loss_val = sess.run(
                     [train_op_gen, g_cost_tf],
                     feed_dict={
@@ -103,6 +112,12 @@ for epoch in range(n_epochs):
                         Y_tf_sample:Y_np_sample
                         })
             generated_samples = (generated_samples + 1.)/2.
-            save_visualization(generated_samples, (14,14), save_path='./vis/sample_%04d.jpg' % int(iterations/step))
+            img = save_visualization(generated_samples, (10,10), save_path='./vis/sample_%04d.jpg' % 0) #int(iterations/step))
+            cv2.namedWindow('img',1)
+            cv2.imshow('img',img)
+            #if iterations>10:
+            cv2.waitKey(1)
+
+            #print("sample:", GT_sample)
 
         iterations += 1
